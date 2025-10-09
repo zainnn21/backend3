@@ -12,7 +12,9 @@ export const createUser = async (req: Request, res: Response) => {
     const body: UserBaseDTO = req.body;
     const result = await userModels.createUser(body);
     await client.query("COMMIT");
-    res.status(201).json({ message: "User created successfully", data: result });
+    res
+      .status(201)
+      .json({ message: "User created successfully", data: result });
   } catch (error) {
     await client.query("ROLLBACK");
     console.error(error);
@@ -20,10 +22,11 @@ export const createUser = async (req: Request, res: Response) => {
   }
 };
 
-export const loginUser = async (req:Request, res:Response) =>{
+export const loginUser = async (req: Request, res: Response) => {
   try {
-    const JWT_SECRET = process.env.JWT_SECRET
+    const JWT_SECRET = process.env.JWT_SECRET;
   } catch (error) {
-    
+    console.log(error);
+    res.status(500).json({ message: "Internal server error" });
   }
-}
+};

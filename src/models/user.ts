@@ -27,4 +27,20 @@ export const createUser = async (body: UserBaseDTO) => {
   return { user: resultUserBase.rows[0], profile: resultProfileUser.rows[0] };
 };
 
-export const createProfileUser = async () => {};
+export const loginUser = async (body: UserBaseDTO) => {
+  const SQLQuery = `select * from user_base where email=$1`;
+  const values = [body.email];
+  const resultEmail = await pool.query(SQLQuery, values);
+  
+  if (resultEmail.rows.length === 0){
+    return {status: 404, message: "Email or password is incorrect"}
+  }
+
+  const isPasswordValid = await Bun.password.verify(body.password, resultEmail.rows[0].password);
+
+  if (!isPasswordValid){
+    return{status: 401, message: "Email or password is incorrect"};
+  }
+  
+
+}
