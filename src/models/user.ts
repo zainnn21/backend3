@@ -31,16 +31,19 @@ export const loginUser = async (body: UserBaseDTO) => {
   const SQLQuery = `select * from user_base where email=$1`;
   const values = [body.email];
   const resultEmail = await pool.query(SQLQuery, values);
-  
-  if (resultEmail.rows.length === 0){
-    return {status: 404, message: "Email or password is incorrect"}
+
+  if (resultEmail.rows.length === 0) {
+    return { status: 404, message: "Email or password is incorrect" };
   }
 
-  const isPasswordValid = await Bun.password.verify(body.password, resultEmail.rows[0].password);
+  console.log(body.password, resultEmail.rows[0].password);
+  const isPasswordValid = await Bun.password.verify(
+    body.password,
+    resultEmail.rows[0].password
+  );
+  console.log(isPasswordValid);
 
-  if (!isPasswordValid){
-    return{status: 401, message: "Email or password is incorrect"};
+  if (!isPasswordValid) {
+    return { status: 401, message: "Email or password is incorrect" };
   }
-  
-
-}
+};
