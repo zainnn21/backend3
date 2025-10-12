@@ -30,3 +30,9 @@ export const loginUser = async (req: Request, res: Response) => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
+
+export  const verifyEmail =async (req: Request, res: Response) =>{}
+
+export const getUserCourses = async (req: Request,res: Response) =>{}
+
+export const uploadPicture = async (req: Request, res: Response) =>{}
