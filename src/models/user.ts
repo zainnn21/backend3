@@ -1,5 +1,6 @@
 import pool from "../config/db";
-import type { UserBaseDTO } from "../dto/userDTO";
+import type { UserBaseDTO, UserLoginDTO } from "../dto/userDTO";
+import jwt from "jsonwebtoken";
 
 export const createUser = async (body: UserBaseDTO) => {
   const passwordHash = await Bun.password.hash(body.password);
@@ -27,23 +28,35 @@ export const createUser = async (body: UserBaseDTO) => {
   return { user: resultUserBase.rows[0], profile: resultProfileUser.rows[0] };
 };
 
-export const loginUser = async (body: UserBaseDTO) => {
-  const SQLQuery = `select * from user_base where email=$1`;
-  const values = [body.email];
-  const resultEmail = await pool.query(SQLQuery, values);
+export const loginUser = async (body: UserLoginDTO) => {
+  const { email, password } = body;
+  const SQLQuery = `select * from user_base where email=$1 RETURNING *;`;
+  const values = [email];
+  const result = await pool.query(SQLQuery, values);
 
-  if (resultEmail.rows.length === 0) {
-    return { status: 404, message: "Email or password is incorrect" };
+  if (result.rows.length === 0) {
+    throw new Error("404");
   }
 
-  console.log(body.password, resultEmail.rows[0].password);
+  console.log(password, result.rows[0].password);
   const isPasswordValid = await Bun.password.verify(
-    body.password,
-    resultEmail.rows[0].password
+    password,
+    result.rows[0].password
   );
+
   console.log(isPasswordValid);
 
-  if (!isPasswordValid) {
-    return { status: 401, message: "Email or password is incorrect" };
+  if (isPasswordValid) {
+    const payload = {
+      user_id: result.rows[0].user_id,
+      email: result.rows[0].email,
+      role_id: result.rows[0].role_id,
+      username: result.rows[0].username,
+    };
+    const secret = process.env.JWT_SECRET!;
+    const expiresIn = "1h";
+    return jwt.sign(payload, secret, { expiresIn: expiresIn });
+  } else {
+    throw new Error("401");
   }
 };

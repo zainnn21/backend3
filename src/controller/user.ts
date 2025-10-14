@@ -1,8 +1,7 @@
 import type { Request, Response } from "express";
 import * as userModels from "../models/user";
-import type { UserBaseDTO } from "../dto/userDTO";
+import type { UserBaseDTO, UserLoginDTO } from "../dto/userDTO";
 import pool from "../config/db";
-import jwt from "jsonwebtoken";
 
 export const createUser = async (req: Request, res: Response) => {
   const client = await pool.connect();
@@ -24,15 +23,30 @@ export const createUser = async (req: Request, res: Response) => {
 
 export const loginUser = async (req: Request, res: Response) => {
   try {
-    const JWT_SECRET = process.env.JWT_SECRET;
-  } catch (error) {
+    const body: UserLoginDTO = req.body;
+    console.log(body);
+    const user = await userModels.loginUser(body);
+    res.status(200).json({
+      message: "Login Success",
+      email: body.email,
+      token: user,
+    });
+  } catch (error: any) {
     console.log(error);
-    res.status(500).json({ message: "Internal server error" });
+    if (error.message === "404") {
+      return res.status(404).json({ message: "User not found" });
+    } else if (error.message === "401") {
+      return res
+        .status(401)
+        .json({ message: "Email or password is incorrect" });
+    } else {
+      return res.status(500).json({ message: "Internal server error" });
+    }
   }
 };
 
-export  const verifyEmail =async (req: Request, res: Response) =>{}
+export const verifyEmail = async (req: Request, res: Response) => {};
 
-export const getUserCourses = async (req: Request,res: Response) =>{}
+export const getUserCourses = async (req: Request, res: Response) => {};
 
-export const uploadPicture = async (req: Request, res: Response) =>{}
+export const uploadPicture = async (req: Request, res: Response) => {};

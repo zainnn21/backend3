@@ -17,3 +17,13 @@ export interface UserBaseDTO {
   created_date: Date;
   updated_date: Date;
 }
+
+export interface UserLoginDTO {
+  email: string;
+  password: string;
+}
+
+export interface UserVerifyDTO {
+  email: string;
+  token: string;
+}
