@@ -1,8 +1,10 @@
 import pool from "../config/db";
-import type { UserBaseDTO, UserLoginDTO } from "../dto/userDTO";
+import type { payloadDTO, UserBaseDTO, UserLoginDTO } from "../dto/userDTO";
 import jwt from "jsonwebtoken";
+import { checkEmailUnique } from "../utils/checkUniqueEmail";
 
 export const createUser = async (body: UserBaseDTO) => {
+  await checkEmailUnique(body.email);
   const passwordHash = await Bun.password.hash(body.password);
 
   const SQLQuery = `insert into user_base(email, role_id, password, username) values($1, $2, $3, $4) RETURNING *;`;
@@ -30,7 +32,7 @@ export const createUser = async (body: UserBaseDTO) => {
 
 export const loginUser = async (body: UserLoginDTO) => {
   const { email, password } = body;
-  const SQLQuery = `select * from user_base where email=$1 RETURNING *;`;
+  const SQLQuery = `select * from user_base where email=$1;`;
   const values = [email];
   const result = await pool.query(SQLQuery, values);
 
@@ -47,7 +49,7 @@ export const loginUser = async (body: UserLoginDTO) => {
   console.log(isPasswordValid);
 
   if (isPasswordValid) {
-    const payload = {
+    const payload: payloadDTO = {
       user_id: result.rows[0].user_id,
       email: result.rows[0].email,
       role_id: result.rows[0].role_id,

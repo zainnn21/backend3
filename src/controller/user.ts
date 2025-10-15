@@ -14,10 +14,14 @@ export const createUser = async (req: Request, res: Response) => {
     res
       .status(201)
       .json({ message: "User created successfully", data: result });
-  } catch (error) {
+  } catch (error: any) {
+    console.log(error);
     await client.query("ROLLBACK");
-    console.error(error);
-    res.status(500).json({ message: "Internal server error" });
+    if (error.message === "409") {
+      return res.status(409).json({ message: "Email already in use" });
+    } else {
+      res.status(500).json({ message: "Internal server error" });
+    }
   }
 };
 

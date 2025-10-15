@@ -27,3 +27,10 @@ export interface UserVerifyDTO {
   email: string;
   token: string;
 }
+
+export interface payloadDTO {
+  user_id: number;
+  email: string;
+  role_id: number;
+  username: string;
+}
