@@ -1,0 +1,161 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model course_base {
+  course_id         BigInt             @id @default(autoincrement())
+  course_name       String             @db.VarChar(255)
+  description       String?
+  user_id           BigInt
+  rating            Float?             @db.Real
+  category_id       BigInt?
+  review_count      Int?               @default(0)
+  price             Decimal            @db.Decimal(10, 2)
+  duration          Int?
+  certificate       Boolean?           @default(false)
+  createdat         DateTime?          @default(now()) @db.Timestamptz(6)
+  updatedat         DateTime?          @db.Timestamptz(6)
+  course_categories course_categories? @relation(fields: [category_id], references: [category_id], onDelete: NoAction, onUpdate: NoAction)
+  user_base         user_base          @relation(fields: [user_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  order_item        order_item[]
+  purchased_course  purchased_course[]
+  review_course     review_course[]
+  section_course    section_course[]
+}
+
+model course_categories {
+  category_id   BigInt        @id @default(autoincrement())
+  category_name String        @db.VarChar(100)
+  course_base   course_base[]
+}
+
+model lesson_content {
+  content_id     BigInt         @id @default(autoincrement())
+  lesson_id      BigInt         @unique
+  video_url      String?        @db.VarChar(255)
+  article_text   String?
+  lesson_section lesson_section @relation(fields: [lesson_id], references: [lesson_id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model lesson_section {
+  lesson_id      BigInt               @id @default(autoincrement())
+  section_id     BigInt
+  title          String               @db.VarChar(255)
+  order          Int?
+  content_type   lesson_content_type?
+  lesson_content lesson_content?
+  section_course section_course       @relation(fields: [section_id], references: [section_id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model order_item {
+  order_item_id     BigInt      @id @default(autoincrement())
+  course_id         BigInt
+  order_id          BigInt
+  price_at_purchase Decimal     @db.Decimal(10, 2)
+  course_base       course_base @relation(fields: [course_id], references: [course_id], onDelete: NoAction, onUpdate: NoAction)
+  orders            orders      @relation(fields: [order_id], references: [order_id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model orders {
+  order_id    BigInt        @id @default(autoincrement())
+  user_id     BigInt
+  total_price Decimal       @db.Decimal(10, 2)
+  order_date  DateTime?     @db.Date
+  status      order_status?
+  order_item  order_item[]
+  user_base   user_base     @relation(fields: [user_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model profile_user {
+  profile_id    BigInt    @id @default(autoincrement())
+  fullname      String?   @db.VarChar(255)
+  no_hp         String?   @db.VarChar(50)
+  job           String?   @db.VarChar(255)
+  user_id       BigInt    @unique
+  working_place String?   @db.VarChar(255)
+  gender        gender?
+  country_code  String?   @db.VarChar(10)
+  created_date  DateTime? @default(now()) @db.Timestamptz(6)
+  updated_date  DateTime? @db.Timestamptz(6)
+  user_base     user_base @relation(fields: [user_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model purchased_course {
+  purchase_id             BigInt      @id @default(autoincrement())
+  course_id               BigInt
+  user_id                 BigInt
+  purchase_date           DateTime?   @db.Date
+  progress                Float?      @default(0.0) @db.Real
+  completion_date         DateTime?   @db.Date
+  certificate_code        String?     @unique @db.VarChar(255)
+  certificate_issued_date DateTime?   @db.Date
+  course_base             course_base @relation(fields: [course_id], references: [course_id], onDelete: NoAction, onUpdate: NoAction)
+  user_base               user_base   @relation(fields: [user_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@unique([course_id, user_id])
+}
+
+model review_course {
+  review_id   BigInt      @id @default(autoincrement())
+  user_id     BigInt
+  course_id   BigInt
+  rating      Float       @db.Real
+  review      String?
+  createdat   DateTime?   @default(now()) @db.Timestamptz(6)
+  course_base course_base @relation(fields: [course_id], references: [course_id], onDelete: NoAction, onUpdate: NoAction)
+  user_base   user_base   @relation(fields: [user_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@unique([user_id, course_id])
+}
+
+model roles {
+  role_id   BigInt      @id @default(autoincrement())
+  role_name String      @db.VarChar(50)
+  user_base user_base[]
+}
+
+model section_course {
+  section_id     BigInt           @id @default(autoincrement())
+  course_id      BigInt
+  title          String           @db.VarChar(255)
+  order          Int?
+  lesson_section lesson_section[]
+  course_base    course_base      @relation(fields: [course_id], references: [course_id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model user_base {
+  user_id          BigInt             @id @default(autoincrement())
+  email            String             @unique @db.VarChar(255)
+  role_id          BigInt
+  password         String             @db.VarChar(255)
+  username         String             @unique @db.VarChar(100)
+  course_base      course_base[]
+  orders           orders[]
+  profile_user     profile_user?
+  purchased_course purchased_course[]
+  review_course    review_course[]
+  roles            roles              @relation(fields: [role_id], references: [role_id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+enum gender {
+  male
+  female
+}
+
+enum lesson_content_type {
+  video
+  article
+  quiz
+}
+
+enum order_status {
+  pending
+  completed
+  failed
+}
