@@ -6,15 +6,14 @@ WORKDIR /usr/src/app
 
 # Copy file package manager
 COPY package.json bun.lock ./
+COPY prisma/schema.prisma ./prisma/
 
 # Run instalasi Inside IMAGE
 RUN bun install
 
-RUN bunx prisma db pull
-
-RUN bunx prisma generate
-
 # Copy rest code application
 COPY . .
 
-CMD [ "bun", "run", "dev" ]
+RUN bunx prisma generate
+
+CMD [ "bun", "run", "start" ]
