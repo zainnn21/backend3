@@ -10,6 +10,10 @@ COPY package.json bun.lock ./
 # Run instalasi Inside IMAGE
 RUN bun install
 
+RUN bunx prisma db pull
+
+RUN bunx prisma generate
+
 # Copy rest code application
 COPY . .
 
