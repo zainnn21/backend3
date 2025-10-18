@@ -8,8 +8,12 @@ const PORT = process.env.PORT || 3000;
 
 // middleware untuk parsing JSON body
 app.use(express.json());
+(BigInt.prototype as any).toJSON = function () {
+  return this.toString();
+};
 
 app.use(logRequest);
+
 app.use("/course", courseRouter);
 app.use("/user", userRouter);
 

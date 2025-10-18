@@ -126,6 +126,6 @@ export const searchCourses = async (req: Request, res: Response) => {
     console.log(error);
     res
       .status(500)
-      .json({ message: "Failed retrieving data", serverError: error });
+      .json({ message: "Internal server error", serverError: error });
   }
 };

@@ -5,7 +5,8 @@
   "private": true,
   "scripts": {
     "dev": "bun --watch src/app.ts",
-    "start": "bun src/app.ts"
+    "start": "bun src/app.ts",
+    "postinstall": "prisma generate"
   },
   "devDependencies": {
     "@types/bun": "latest",
