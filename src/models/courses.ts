@@ -1,3 +1,4 @@
+import { prisma } from "../utils/prisma";
 import pool from "../config/db";
 import type { CourseDTO } from "../dto/courseDTO";
 
@@ -70,4 +71,55 @@ export const deleteCourseById = async (courseId: number) => {
   const value = [courseId];
 
   return await pool.query(SQLQuery, value);
+};
+
+export const searchCourses = async (query: any) => {
+  const {
+    name,
+    min_price,
+    max_price,
+    category_id,
+    sortBy = "createdat",
+    order = "desc",
+  } = query;
+
+  const where = {} as any;
+
+  // Filtering conditions
+  // search by name
+  if (name) {
+    where.course_name = { contains: name, mode: "insensitive" };
+  }
+
+  // filter by price range
+  if (min_price || max_price) {
+    where.price = {} as any;
+    if (min_price) {
+      where.price.gte = parseFloat(min_price);
+    }
+    if (max_price) {
+      where.price.lte = parseFloat(max_price);
+    }
+  }
+  // filter by category_id
+  if (category_id) {
+    where.category_id = parseInt(category_id);
+  }
+
+  // Sorting condition
+  const orderBy = {} as any;
+  if (sortBy && ["asc", "desc"].includes(order.toLowerCase())) {
+    orderBy[sortBy] = order.toLowerCase();
+  }
+
+  try {
+    const courses = await prisma.course_base.findMany({
+      where,
+      orderBy,
+    });
+    return courses;
+  } catch (error) {
+    console.log("Prisma error:", error);
+    throw error;
+  }
 };

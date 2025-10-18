@@ -4,6 +4,7 @@ import { accessValidation } from "../middleware/accessValidation";
 
 const router = express.Router();
 
+router.get("/search", courseController.searchCourses);
 router.get("/", courseController.getAllCourses);
 router.get("/:id", courseController.getCourseById);
 router.post("/", accessValidation, courseController.createNewCourse);

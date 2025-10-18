@@ -114,3 +114,18 @@ export const deleteCourseById = async (req: Request, res: Response) => {
     res.status(500).json({ message: "Failed delete data", serverError: error });
   }
 };
+
+export const searchCourses = async (req: Request, res: Response) => {
+  try {
+    console.log("Query Params:", req.query);
+    const result = await courseModels.searchCourses(req.query);
+    res
+      .status(200)
+      .json({ message: "Successfully retrieving data", data: result });
+  } catch (error) {
+    console.log(error);
+    res
+      .status(500)
+      .json({ message: "Failed retrieving data", serverError: error });
+  }
+};
