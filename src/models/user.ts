@@ -101,10 +101,8 @@ export const verifyEmail = async (data: UserVerifyDTO) => {
 
   const SQLUpdate = `update user_base set is_verified=true where user_id=$1 RETURNING *;`;
   const updateValues = [tokenData.user_id];
-  const updateResult = await pool.query(SQLUpdate, updateValues);
+  await pool.query(SQLUpdate, updateValues);
 
   const SQLDeleteToken = `delete from user_tokens where token_id=$1;`;
   await pool.query(SQLDeleteToken, [tokenData.token_id]);
-
-  return updateResult.rows[0];
 };

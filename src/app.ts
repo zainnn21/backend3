@@ -1,6 +1,7 @@
 import express from "express";
 import courseRouter from "./routes/course";
 import userRouter from "./routes/user";
+import uploadRouter from "./routes/upload"
 import { logRequest } from "./middleware/logs";
 
 const app = express();
@@ -16,6 +17,7 @@ app.use(logRequest);
 
 app.use("/course", courseRouter);
 app.use("/user", userRouter);
+app.use("/upload", uploadRouter)
 
 app.listen(PORT, () => {
   console.log(`server is running on port ${PORT}`);

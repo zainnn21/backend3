@@ -63,11 +63,11 @@ export const verifyEmail = async (req: Request, res: Response) => {
       return res.status(400).json({ message: "Email and token are required" });
     }
 
-    const result = await userModels.verifyEmail(data);
+    await userModels.verifyEmail(data);
     await client.query("COMMIT");
     res
       .status(200)
-      .json({ message: "Email verified successfully", data: result });
+      .json({ message: "Email verified successfully", data: data.email });
   } catch (error: any) {
     await client.query("ROLLBACK");
     console.log(error);
@@ -80,7 +80,5 @@ export const verifyEmail = async (req: Request, res: Response) => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
-
-export const getUserCourses = async (req: Request, res: Response) => {};
 
 export const uploadPicture = async (req: Request, res: Response) => {};
