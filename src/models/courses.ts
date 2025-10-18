@@ -77,10 +77,10 @@ export const searchCourses = async (query: any) => {
   try {
     const {
       name,
-      min_price,
-      max_price,
-      category_id,
-      sortBy = "createdat",
+      minprice,
+      maxprice,
+      categoryid,
+      sortby = "createdat",
       order = "desc",
     } = query;
 
@@ -93,24 +93,24 @@ export const searchCourses = async (query: any) => {
     }
 
     // filter by price range
-    if (min_price || max_price) {
+    if (minprice || maxprice) {
       where.price = {} as any;
-      if (min_price) {
-        where.price.gte = parseFloat(min_price);
+      if (minprice) {
+        where.price.gte = parseFloat(minprice);
       }
-      if (max_price) {
-        where.price.lte = parseFloat(max_price);
+      if (maxprice) {
+        where.price.lte = parseFloat(maxprice);
       }
     }
     // filter by category_id
-    if (category_id) {
-      where.category_id = parseInt(category_id);
+    if (categoryid) {
+      where.category_id = parseInt(categoryid);
     }
 
     // Sorting condition
     const orderBy = {} as any;
-    if (sortBy && ["asc", "desc"].includes(order.toLowerCase())) {
-      orderBy[sortBy] = order.toLowerCase();
+    if (sortby && ["asc", "desc"].includes(order.toLowerCase())) {
+      orderBy[sortby] = order.toLowerCase();
     }
 
     const courses = await prisma.course_base.findMany({
