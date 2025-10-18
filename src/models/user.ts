@@ -1,7 +1,14 @@
 import pool from "../config/db";
-import type { payloadDTO, UserBaseDTO, UserLoginDTO } from "../dto/userDTO";
+import type {
+  payloadDTO,
+  UserBaseDTO,
+  UserLoginDTO,
+  UserVerifyDTO,
+} from "../dto/userDTO";
 import jwt from "jsonwebtoken";
 import { checkEmailUnique } from "../utils/checkUniqueEmail";
+import { randomUUIDv7 } from "bun";
+import { sendVerificationEmail } from "../utils/sendVerificationEmail";
 
 export const createUser = async (body: UserBaseDTO) => {
   await checkEmailUnique(body.email);
@@ -25,9 +32,13 @@ export const createUser = async (body: UserBaseDTO) => {
     body.gender,
     now,
   ];
-
   const resultProfileUser = await pool.query(SQLQueryProfile, valuesProfile);
-  return { user: resultUserBase.rows[0], profile: resultProfileUser.rows[0] };
+  try {
+    await tokenEmailVerification(body.email);
+    return { user: resultUserBase.rows[0], profile: resultProfileUser.rows[0] };
+  } catch (error) {
+    throw error;
+  }
 };
 
 export const loginUser = async (body: UserLoginDTO) => {
@@ -61,4 +72,39 @@ export const loginUser = async (body: UserLoginDTO) => {
   } else {
     throw new Error("401");
   }
+};
+
+export const tokenEmailVerification = async (email: string) => {
+  const expiresIn = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
+  const createdAt = new Date().toISOString();
+  const token = randomUUIDv7();
+  const SQLQuery = `insert into user_tokens(user_id, token, type, expires_at,created_at) values((select user_id from user_base where email=$1), $2, 'EMAIL_VERIFICATION', $3, $4) RETURNING *;`;
+  const values = [email, token, expiresIn, createdAt];
+  await pool.query(SQLQuery, values);
+  sendVerificationEmail(email, token);
+};
+
+export const verifyEmail = async (data: UserVerifyDTO) => {
+  const { email, token } = data;
+  const SQLQuery = `select * from user_tokens where token=$1 and type='EMAIL_VERIFICATION' and user_id=(select user_id from user_base where email=$2) ORDER BY created_at DESC LIMIT 1;`;
+  const values = [token, email];
+  const result = await pool.query(SQLQuery, values);
+  if (result.rows.length === 0) {
+    throw new Error("Invalid token or email");
+  }
+  const tokenData = result.rows[0];
+  const now = new Date();
+
+  if (now > new Date(tokenData.expires_at)) {
+    throw new Error("Token expired");
+  }
+
+  const SQLUpdate = `update user_base set is_verified=true where user_id=$1 RETURNING *;`;
+  const updateValues = [tokenData.user_id];
+  const updateResult = await pool.query(SQLUpdate, updateValues);
+
+  const SQLDeleteToken = `delete from user_tokens where token_id=$1;`;
+  await pool.query(SQLDeleteToken, [tokenData.token_id]);
+
+  return updateResult.rows[0];
 };

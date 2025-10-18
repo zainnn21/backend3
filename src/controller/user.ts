@@ -1,6 +1,6 @@
 import type { Request, Response } from "express";
 import * as userModels from "../models/user";
-import type { UserBaseDTO, UserLoginDTO } from "../dto/userDTO";
+import type { UserBaseDTO, UserLoginDTO, UserVerifyDTO } from "../dto/userDTO";
 import pool from "../config/db";
 
 export const createUser = async (req: Request, res: Response) => {
@@ -49,7 +49,37 @@ export const loginUser = async (req: Request, res: Response) => {
   }
 };
 
-export const verifyEmail = async (req: Request, res: Response) => {};
+export const verifyEmail = async (req: Request, res: Response) => {
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+    console.log(req.body);
+    const data: UserVerifyDTO = {
+      email: req.query.email as string,
+      token: req.query.token as string,
+    };
+
+    if (!data.email || !data.token) {
+      return res.status(400).json({ message: "Email and token are required" });
+    }
+
+    const result = await userModels.verifyEmail(data);
+    await client.query("COMMIT");
+    res
+      .status(200)
+      .json({ message: "Email verified successfully", data: result });
+  } catch (error: any) {
+    await client.query("ROLLBACK");
+    console.log(error);
+    if (error.message === "Invalid token or email") {
+      return res.status(400).json({ message: "Invalid verification link" });
+    }
+    if (error.message === "Token expired") {
+      return res.status(400).json({ message: "Verification link has expired" });
+    }
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
 
 export const getUserCourses = async (req: Request, res: Response) => {};
 

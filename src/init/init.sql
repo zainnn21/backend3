@@ -2,6 +2,7 @@
 CREATE TYPE order_status AS ENUM ('pending', 'completed', 'failed');
 CREATE TYPE lesson_content_type AS ENUM ('video', 'article', 'quiz');
 CREATE TYPE gender AS ENUM ('male', 'female');
+CREATE TYPE token_type AS ENUM ('PASSWORD_RESET', 'EMAIL_VERIFICATION', 'API_KEY');
 
 -- Table: roles
 -- Stores user roles like 'instructor' or 'student'.
@@ -18,7 +19,18 @@ CREATE TABLE user_base (
     role_id BIGINT NOT NULL,
     password VARCHAR(255) NOT NULL,
     username VARCHAR(100) UNIQUE NOT NULL,
+    is_verified BOOLEAN DEFAULT FALSE,
     FOREIGN KEY (role_id) REFERENCES roles(role_id)
+);
+
+CREATE TABLE user_tokens (
+    token_id BIGSERIAL PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    token UUID NOT NULL UNIQUE DEFAULT gen_random_uuid(),
+    type token_type NOT NULL,
+    expires_at TIMESTAMPTZ NOT NULL,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    FOREIGN KEY (user_id) REFERENCES user_base(user_id) ON DELETE CASCADE
 );
 
 -- Table: profile_user

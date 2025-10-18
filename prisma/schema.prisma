@@ -141,6 +141,17 @@ model user_base {
   purchased_course purchased_course[]
   review_course    review_course[]
   roles            roles              @relation(fields: [role_id], references: [role_id], onDelete: NoAction, onUpdate: NoAction)
+  user_tokens      user_tokens[]
+}
+
+model user_tokens {
+  token_id   BigInt     @id @default(autoincrement())
+  user_id    BigInt
+  token      String     @unique @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  type       token_type
+  expires_at DateTime   @db.Timestamptz(6)
+  created_at DateTime?  @default(now()) @db.Timestamptz(6)
+  user_base  user_base  @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: NoAction)
 }
 
 enum gender {
@@ -158,4 +169,10 @@ enum order_status {
   pending
   completed
   failed
+}
+
+enum token_type {
+  PASSWORD_RESET
+  EMAIL_VERIFICATION
+  API_KEY
 }

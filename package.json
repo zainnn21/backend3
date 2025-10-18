@@ -5,11 +5,11 @@
   "private": true,
   "scripts": {
     "dev": "bun --watch src/app.ts",
-    "start": "bun src/app.ts",
-    "postinstall": "prisma generate"
+    "start": "bun src/app.ts"
   },
   "devDependencies": {
     "@types/bun": "latest",
+    "@types/nodemailer": "^7.0.2",
     "ts-node": "^10.9.2"
   },
   "peerDependencies": {
@@ -22,6 +22,7 @@
     "@types/pg": "^8.15.5",
     "express": "^5.1.0",
     "jsonwebtoken": "^9.0.2",
+    "nodemailer": "^7.0.9",
     "pg": "^8.16.3",
     "prisma": "^6.17.1"
   }
