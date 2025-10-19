@@ -119,6 +119,9 @@ export const searchCourses = async (req: Request, res: Response) => {
   try {
     console.log("Query Params:", req.query);
     const result = await courseModels.searchCourses(req.query);
+    if (result.length === 0) {
+      return res.status(404).json({ message: "No courses found" });
+    }
     res
       .status(200)
       .json({ message: "Successfully retrieving data", data: result });

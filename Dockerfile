@@ -13,4 +13,6 @@ RUN bun install
 # Copy rest code application
 COPY . .
 
-CMD [ "bun", "run", "dev" ]
+RUN bunx prisma generate
+
+CMD [ "bun", "start" ]

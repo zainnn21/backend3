@@ -51,6 +51,10 @@ export const loginUser = async (body: UserLoginDTO) => {
     throw new Error("404");
   }
 
+  if (result.rows[0].is_verified === false){
+    throw new Error("User not verified");
+  }
+
   console.log(password, result.rows[0].password);
   const isPasswordValid = await Bun.password.verify(
     password,

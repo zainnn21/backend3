@@ -43,6 +43,8 @@ export const loginUser = async (req: Request, res: Response) => {
       return res
         .status(401)
         .json({ message: "Email or password is incorrect" });
+    } else if (error.message === "User not verified"){
+      return res.status(401).json({message: "User not verified"})
     } else {
       return res.status(500).json({ message: "Internal server error" });
     }
