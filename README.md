@@ -16,7 +16,7 @@ Follow these steps to get your development environment set up and running.
 ### 1. Clone the repository
 
 ```sh
-git clone <https://github.com/zainnn21/backend2.git>
+git clone <https://github.com/zainnn21/backend3.git>
 cd <backend2>
 ```
 
@@ -29,8 +29,6 @@ You can copy the example file:
 ```sh
 cp .env.example .env
 ```
-
-**Note:** The `DB_PORT` should be `5432` as this is the port the `db` service uses internally within the Docker network. The host machine will access the database via port `5433`.
 
 ### 3. Build and Run the Application
 
@@ -49,7 +47,7 @@ docker-compose up --build -d
 ### 4. Accessing the Services
 
 - **Application**: The application will be running and accessible at `http://localhost:3000`.
-- **Database**: The PostgreSQL database can be accessed from your host machine on `localhost:5433`.
+- **Database**: The PostgreSQL database can be accessed from your host machine on `localhost:5432`.
 
 #### Using DBeaver (or other SQL Client)
 
@@ -59,7 +57,7 @@ You can connect to the PostgreSQL database using any SQL client. Here are the se
 2.  Select **PostgreSQL**.
 3.  On the "Main" tab, fill in the connection details:
     - **Host**: `localhost`
-    - **Port**: `5433`
+    - **Port**: `5432`
     - **Database**: The value of `POSTGRES_DB` from your `.env` file (e.g., `edu_course_db`).
     - **Username**: The value of `POSTGRES_USER` from your `.env` file (e.g., `user`).
     - **Password**: The value of `POSTGRES_PASSWORD` from your `.env` file (e.g., `password`).
@@ -83,6 +81,7 @@ The `init.sql` script will create the following tables:
 - `section_course`
 - `lesson_section`
 - `lesson_content`
+- `user_tokens`
 
 ## API Endpoints & Testing
 
@@ -97,11 +96,16 @@ Here is a summary of the available endpoints for the `course` resource:
 -   `POST /course`: Create a new course.
 -   `PUT /course/:id`: Update an existing course.
 -   `DELETE /course/:id`: Delete a course.
+-   `GET /course/search`: search course
+
+-   `POST /user/register`: Register User
+-   `POST /user/login`: Login User
+-   `POST /upload/file`: Upload Image
 
 ### Stopping the Application
 
 To stop and remove the containers, networks, and volumes, run:
 
 ```sh
-docker-compose down
+docker-compose down -v
 ```
